@@ -10,3 +10,8 @@ Planned Features
   -> Dashboard
   -> Financial reports
   -> Data visualisation
+
+
+## Current Status
+
+Project planning and initial setup completed.
