@@ -43,7 +43,7 @@ def create_database():
     connection.close()
 
 
-# CRUD operations
+# CRUD operations for category
 
 def add_category(name):
     connection = sqlite3.connect("database/finance.db")
@@ -92,5 +92,50 @@ def delete_category(category_id):
         (category_id,)
     )
 
+    connection.commit()
+    connection.close()
+
+# CRUD operations for transactions
+
+def add_transaction(category_id, amount, date, description):
+    connection = sqlite3.connect("database/finance.db")
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "INSERT INTO transactions (category_id, amount, date, description) VALUES (?, ?, ?, ?)",
+        (category_id, amount, date, description)
+    )
+
+    connection.commit()
+    connection.close()
+
+def get_transactions():
+    connection = sqlite3.connect("database/finance.db")
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT id, category_id, amount, date, description FROM transactions")
+    transactions = cursor.fetchall()
+    connection.close()
+    return transactions
+
+def update_transaction(transaction_id, amount, date, description):
+    connection = sqlite3.connect("database/finance.db")
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "UPDATE transactions SET amount = ?, date = ?, description = ? WHERE id = ?",
+        (amount, date, description, transaction_id)
+    )
+    connection.commit()
+    connection.close()
+
+def delete_transaction(transaction_id):
+    connection = sqlite3.connect("database/finance.db")
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "DELETE FROM transactions WHERE id = ?",
+        (transaction_id,)
+    )
     connection.commit()
     connection.close()
