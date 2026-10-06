@@ -12,7 +12,7 @@ def validate_amount(amount):
 def validate_date(date):
     try:
         datetime.strptime(date, "%Y-%m-%d")
-    except ValueError:
+    except (ValueError, TypeError):
         raise ValueError("Date must be in YYYY-MM-DD format.")
 
 

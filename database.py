@@ -141,15 +141,27 @@ def get_transactions():
         return transactions
 
 
-def update_transaction(transaction_id, amount, date, description):
+def update_transaction(
+    transaction_id,
+    category_id,
+    amount,
+    date,
+    description
+):
     with database_connection() as connection:
         cursor = connection.cursor()
 
         cursor.execute(
             "UPDATE transactions "
-            "SET amount = ?, date = ?, description = ? "
+            "SET category_id = ?, amount = ?, date = ?, description = ? "
             "WHERE id = ?",
-            (amount, date, description, transaction_id)
+            (
+                category_id,
+                amount,
+                date,
+                description,
+                transaction_id
+            )
         )
 
 
@@ -196,15 +208,25 @@ def get_budgets():
 
         return budgets
 
-def update_budget(budget_id, amount, period):
+def update_budget(
+    budget_id,
+    category_id,
+    amount,
+    period
+):
     with database_connection() as connection:
         cursor = connection.cursor()
 
         cursor.execute(
             "UPDATE budgets "
-            "SET amount = ?, period = ? "
+            "SET category_id = ?, amount = ?, period = ? "
             "WHERE id = ?",
-            (amount, period, budget_id)
+            (
+                category_id,
+                amount,
+                period,
+                budget_id
+            )
         )
 
 def delete_budget(budget_id):
