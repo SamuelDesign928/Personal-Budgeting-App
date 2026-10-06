@@ -1,5 +1,6 @@
 import sqlite3
 from contextlib import contextmanager
+from models import Category, Transaction, Budget
 
 
 def get_connection():
@@ -72,7 +73,12 @@ def get_categories():
         cursor = connection.cursor()
 
         cursor.execute("SELECT id, name FROM categories")
-        categories = cursor.fetchall()
+        rows = cursor.fetchall()
+
+        categories = []
+        for row in rows:
+            category = Category(id=row[0], name=row[1])
+            categories.append(category)
 
         return categories
 
@@ -119,8 +125,18 @@ def get_transactions():
             "SELECT id, category_id, amount, date, description "
             "FROM transactions"
         )
+        rows = cursor.fetchall()
 
-        transactions = cursor.fetchall()
+        transactions = []
+        for row in rows:
+            transaction = Transaction(
+                id=row[0],
+                category_id=row[1],
+                amount=row[2],
+                date=row[3],
+                description=row[4],
+            )
+            transactions.append(transaction)
 
         return transactions
 
@@ -158,17 +174,26 @@ def add_budget(category_id, amount, period):
             (category_id, amount, period)
         )
 
-def get_budget():
+def get_budgets():
     with database_connection() as connection:
         cursor = connection.cursor()
-    
+
         cursor.execute(
             "SELECT id, category_id, amount, period "
             "FROM budgets"
         )
-    
-        budgets = cursor.fetchall()
-        
+        rows = cursor.fetchall()
+
+        budgets = []
+        for row in rows:
+            budget = Budget(
+                id=row[0],
+                category_id=row[1],
+                amount=row[2],
+                period=row[3],
+            )
+            budgets.append(budget)
+
         return budgets
 
 def update_budget(budget_id, amount, period):
