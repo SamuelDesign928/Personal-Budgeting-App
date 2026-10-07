@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from database import *
 from utils import *
-from datetime import date
+from datetime import date, timedelta
 
 valid_periods = ["weekly", "fortnightly", "monthly"]
 
@@ -47,8 +47,357 @@ class FinanceApp(tk.Tk):
     def show_dashboard(self):
         self.clear_content()
 
-        ttk.Label(self.content, text="Dashboard", font=("Arial", 20)).pack(pady=20)
-        ttk.Label(self.content, text="Dashboard coming soon.").pack()
+        ttk.Label(
+            self.content,
+            text="Dashboard",
+            font=("Arial", 20)
+        ).pack(pady=(10, 20))
+
+        # ---------------------------------------------------------
+        # Get data
+        # ---------------------------------------------------------
+
+        transactions = get_transactions()
+        categories = get_categories()
+        budgets = get_budgets()
+
+        category_names = {
+            category.id: category.name
+            for category in categories
+        }
+
+        # ---------------------------------------------------------
+        # Summary calculations
+        # ---------------------------------------------------------
+
+        total_spending = calculate_total_spending(transactions)
+
+        today = date.today()
+        month_start = today.replace(day=1)
+
+        if today.month == 12:
+            next_month = today.replace(
+                year=today.year + 1,
+                month=1,
+                day=1
+            )
+        else:
+            next_month = today.replace(
+                month=today.month + 1,
+                day=1
+            )
+
+        month_end = next_month - timedelta(days=1)
+
+        monthly_transactions = filter_transactions_by_date(
+            transactions,
+            month_start.isoformat(),
+            month_end.isoformat()
+        )
+
+        monthly_spending = calculate_total_spending(
+            monthly_transactions
+        )
+
+        transaction_count = len(transactions)
+
+        # ---------------------------------------------------------
+        # Summary cards
+        # ---------------------------------------------------------
+
+        summary_frame = ttk.Frame(self.content)
+        summary_frame.pack(fill="x", pady=10)
+
+        total_frame = ttk.LabelFrame(
+            summary_frame,
+            text="Total Spending"
+        )
+        total_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=5
+        )
+
+        ttk.Label(
+            total_frame,
+            text=f"£{total_spending / 100:.2f}",
+            font=("Arial", 16)
+        ).pack(pady=15)
+
+        monthly_frame = ttk.LabelFrame(
+            summary_frame,
+            text="This Month"
+        )
+        monthly_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=5
+        )
+
+        ttk.Label(
+            monthly_frame,
+            text=f"£{monthly_spending / 100:.2f}",
+            font=("Arial", 16)
+        ).pack(pady=15)
+
+        count_frame = ttk.LabelFrame(
+            summary_frame,
+            text="Transactions"
+        )
+        count_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=5
+        )
+
+        ttk.Label(
+            count_frame,
+            text=str(transaction_count),
+            font=("Arial", 16)
+        ).pack(pady=15)
+
+        # ---------------------------------------------------------
+        # Spending by category
+        # ---------------------------------------------------------
+
+        category_frame = ttk.LabelFrame(
+            self.content,
+            text="Spending by Category"
+        )
+        category_frame.pack(
+            fill="both",
+            expand=True,
+            pady=10
+        )
+
+        spending_by_category = calculate_spending_by_category(
+            monthly_transactions
+        )
+
+        category_tree = ttk.Treeview(
+            category_frame,
+            columns=("category", "amount"),
+            show="headings",
+            height=6
+        )
+
+        category_tree.heading(
+            "category",
+            text="Category"
+        )
+
+        category_tree.heading(
+            "amount",
+            text="Spent"
+        )
+
+        category_tree.column(
+            "category",
+            width=200
+        )
+
+        category_tree.column(
+            "amount",
+            width=120
+        )
+
+        category_tree.pack(
+            fill="both",
+            expand=True,
+            padx=5,
+            pady=5
+        )
+
+        for category_id, amount in spending_by_category.items():
+            category_name = category_names.get(
+                category_id,
+                "Unknown"
+            )
+
+            category_tree.insert(
+                "",
+                "end",
+                values=(
+                    category_name,
+                    f"£{amount / 100:.2f}"
+                )
+            )
+
+        # ---------------------------------------------------------
+        # Budgets
+        # ---------------------------------------------------------
+
+        budget_frame = ttk.LabelFrame(
+            self.content,
+            text="Budgets"
+        )
+        budget_frame.pack(
+            fill="x",
+            pady=10
+        )
+
+        for budget in budgets:
+            category_name = category_names.get(
+                budget.category_id,
+                "Unknown"
+            )
+
+            start_date, end_date = get_period_dates(
+                budget.period
+            )
+
+            spending = calculate_budget_usage(
+                transactions,
+                budget,
+                start_date,
+                end_date
+            )
+
+            percentage = (
+                spending / budget.amount * 100
+                if budget.amount > 0
+                else 0
+            )
+
+            percentage = min(percentage, 100)
+
+            row = ttk.Frame(budget_frame)
+            row.pack(
+                fill="x",
+                padx=5,
+                pady=5
+            )
+
+            ttk.Label(
+                row,
+                text=(
+                    f"{category_name} "
+                    f"({budget.period})"
+                ),
+                width=25
+            ).pack(side="left")
+
+            progress = ttk.Progressbar(
+                row,
+                mode="determinate",
+                maximum=100,
+                value=percentage
+            )
+
+            progress.pack(
+                side="left",
+                fill="x",
+                expand=True,
+                padx=10
+            )
+
+            ttk.Label(
+                row,
+                text=(
+                    f"£{spending / 100:.2f} / "
+                    f"£{budget.amount / 100:.2f}"
+                ),
+                width=20
+            ).pack(side="right")
+
+        # ---------------------------------------------------------
+        # Recent transactions
+        # ---------------------------------------------------------
+
+        recent_frame = ttk.LabelFrame(
+            self.content,
+            text="Recent Transactions"
+        )
+        recent_frame.pack(
+            fill="both",
+            expand=True,
+            pady=10
+        )
+
+        recent_tree = ttk.Treeview(
+            recent_frame,
+            columns=(
+                "category",
+                "amount",
+                "date",
+                "description"
+            ),
+            show="headings",
+            height=5
+        )
+
+        recent_tree.heading(
+            "category",
+            text="Category"
+        )
+
+        recent_tree.heading(
+            "amount",
+            text="Amount"
+        )
+
+        recent_tree.heading(
+            "date",
+            text="Date"
+        )
+
+        recent_tree.heading(
+            "description",
+            text="Description"
+        )
+
+        recent_tree.column(
+            "category",
+            width=150
+        )
+
+        recent_tree.column(
+            "amount",
+            width=100
+        )
+
+        recent_tree.column(
+            "date",
+            width=100
+        )
+
+        recent_tree.column(
+            "description",
+            width=250
+        )
+
+        recent_tree.pack(
+            fill="both",
+            expand=True,
+            padx=5,
+            pady=5
+        )
+
+        recent_transactions = sorted(
+            transactions,
+            key=lambda transaction: transaction.date,
+            reverse=True
+        )[:5]
+
+        for transaction in recent_transactions:
+            category_name = category_names.get(
+                transaction.category_id,
+                "Unknown"
+            )
+
+            recent_tree.insert(
+                "",
+                "end",
+                values=(
+                    category_name,
+                    f"£{transaction.amount / 100:.2f}",
+                    transaction.date,
+                    transaction.description or ""
+                )
+            )
 
     # ---------------------------------------------------------
     # Categories
