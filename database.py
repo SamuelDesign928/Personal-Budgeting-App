@@ -1,11 +1,17 @@
 import sqlite3
+from pathlib import Path
 from contextlib import contextmanager
 from models import Category, Transaction, Budget
 
 
 def get_connection():
-    connection = sqlite3.connect("database/finance.db")
+    database_path = Path(__file__).resolve().parent / "database" / "finance.db"
+
+    database_path.parent.mkdir(exist_ok=True)
+
+    connection = sqlite3.connect(database_path)
     connection.execute("PRAGMA foreign_keys = ON")
+
     return connection
 
 

@@ -1,9 +1,9 @@
 import sqlite3
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox, ttk
+from datetime import date, timedelta
 from database import *
 from utils import *
-from datetime import date, timedelta
 
 valid_periods = ["weekly", "fortnightly", "monthly"]
 

@@ -1,0 +1,1 @@
+This was built on Python 3.12.1, raw program requires Python 3.7 or higher.

@@ -1,57 +1,51 @@
-# Project Plan
+# Project Plan (Complete)
 
-## Objective
+This project was developed as a personal finance tracking application
+using Python, Tkinter and SQLite.
 
-Create a desktop application that allows users to manage their finances.
+## Features
 
----
+### Database
+- SQLite database
+- Relational database structure
+- Foreign keys
+- CRUD operations
+- Transaction handling
+- Commit and rollback behaviour
 
-## Technologies
+### Models
+- Dataclasses for categories, transactions and budgets
 
-Python
+### Validation
+- Amount validation
+- Date validation
+- Category name validation
+- Budget period validation
 
-Tkinter
+### GUI
+- Dashboard
+- Category management
+- Transaction management
+- Budget management
 
-SQLite
+### Financial Logic
+- Total spending
+- Spending by category
+- Date filtering
+- Budget usage
+- Remaining budget
+- Weekly, fortnightly and monthly budget periods
 
-Git
+### Dashboard
+- Total spending
+- Current-month spending
+- Transaction count
+- Spending by category
+- Budget progress
+- Recent transactions
 
----
-
-## Architecture
-
-Presentation Layer
-
-Business Logic
-
-Database Layer
-
----
-
-## Modules
-
-Database
-
-Transactions
-
-Categories
-
-Budgets
-
-Savings Goals
-
-Reports
-
-Settings
-
----
-
-## Future Features
-
-Recurring Transactions
-
-CSV Import
-
-Dark Mode
-
-Cloud Backup
+## Finalisation
+- Testing
+- Documentation
+- Repository cleanup
+- GitHub publication
